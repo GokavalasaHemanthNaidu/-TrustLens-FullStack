@@ -141,8 +141,9 @@ export default function VerifyForensicPage() {
     const formData = new FormData();
     formData.append("file", file);
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/verify/image", {
+      const response = await fetch(`${API_BASE_URL}/api/verify/image`, {
         method: "POST",
         body: formData,
       });

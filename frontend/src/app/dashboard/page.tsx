@@ -56,8 +56,9 @@ export default function Dashboard() {
   const fetchAnalytics = async (id: string) => {
     setLoading(true);
     setError(null);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/analytics?user_id=${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/analytics?user_id=${id}`);
       const data = await response.json();
       if (data.success) {
         setAnalytics(data);
@@ -78,8 +79,9 @@ export default function Dashboard() {
     setVerifying(true);
     setVerifyResult(null);
     
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/verify?query=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`${API_BASE_URL}/api/verify?query=${encodeURIComponent(searchQuery)}`);
       const data = await response.json();
       if (data.success) {
         setVerifyResult(data.document);

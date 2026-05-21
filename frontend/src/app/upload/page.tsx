@@ -107,8 +107,9 @@ export default function UploadPage() {
     formData.append("user_id", userId);
     formData.append("override_type", overrideType);
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/upload", {
+      const response = await fetch(`${API_BASE_URL}/api/upload`, {
         method: "POST",
         body: formData,
       });

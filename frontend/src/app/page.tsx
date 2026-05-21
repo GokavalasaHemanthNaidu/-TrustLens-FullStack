@@ -60,7 +60,8 @@ export default function AuthPage() {
     setLoading(true);
     setNotification(null);
 
-    const url = `http://127.0.0.1:8000/api/auth/${isLogin ? "login" : "signup"}`;
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    const url = `${API_BASE_URL}/api/auth/${isLogin ? "login" : "signup"}`;
 
     try {
       const response = await fetch(url, {
