@@ -109,21 +109,49 @@ export default function Dashboard() {
       <Navbar />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-6 py-8 space-y-8">
-        
-        {/* Dashboard Title & Quick Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        {/* Glowing Active Telemetry Dashboard Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 border border-white/5 bg-slate-950/20 backdrop-blur-md rounded-2xl gap-4"
+        >
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">User Dashboard</h1>
-            <p className="text-slate-400 text-sm mt-0.5">Secure document vault and public ledger verification hub</p>
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="h-6 w-6 text-emerald-400 animate-pulse" />
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                User Dashboard
+              </h1>
+            </div>
+            <p className="text-sm text-slate-400 mt-1 font-mono">
+              SECURE CRYPTO LEDGER VAULT ─ <span className="text-teal-400 font-bold">TLV-8092-X9</span>
+            </p>
           </div>
-          <Link href="/upload">
-            <button className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/10 transition-all duration-300 border border-white/5 cursor-pointer">
-              <Plus className="h-5 w-5" />
-              <span>Anchor New Document</span>
-            </button>
-          </Link>
-        </div>
 
+          {/* Operational Diagnostics & Anchor Button */}
+          <div className="flex gap-4 items-center flex-wrap w-full md:w-auto justify-between md:justify-end">
+            <div className="flex gap-3 items-center">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-slate-300">
+                <Globe className="h-3.5 w-3.5 text-purple-400 animate-spin" style={{ animationDuration: '8s' }} />
+                <span>LEDGER: ONLINE</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-bold text-emerald-400 shadow-[0_0_15px_rgba(5,255,155,0.05)]">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
+                </span>
+                <span>SYSTEM SECURE</span>
+              </div>
+            </div>
+
+            <Link href="/upload">
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/10 transition-all duration-300 border border-white/5 cursor-pointer">
+                <Plus className="h-4.5 w-4.5" />
+                <span>Anchor New Document</span>
+              </button>
+            </Link>
+          </div>
+        </motion.div>
         {/* Search & Audit Lookup Bar */}
         <div className="w-full max-w-3xl">
           <form onSubmit={handleVerifySearch} className="flex gap-3">
@@ -232,73 +260,113 @@ export default function Dashboard() {
             </button>
           </div>
         ) : (
-          <>
-            {/* Stats Cards Row */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <>            {/* Staggered Glassmorphic Stats Grid */}
+            <motion.div 
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+                }
+              }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
               
               {/* Total Documents Card */}
-              <div className="glass-panel p-6 rounded-2xl space-y-4 shadow-xl">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Anchored</span>
-                  <div className="p-2 bg-blue-500/10 rounded-xl text-blue-400">
-                    <FileText className="h-5 w-5" />
+              <motion.div
+                variants={{
+                  hidden: { y: 15, opacity: 0 },
+                  show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 200, damping: 20 } }
+                }}
+              >
+                <div className="relative group overflow-hidden rounded-2xl border border-white/5 bg-slate-950/45 p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/10 hover:shadow-[0_12px_30px_rgba(59,130,246,0.05)] hover:-translate-y-1">
+                  <div className="absolute -right-4 -top-4 h-24 w-24 bg-gradient-to-br from-blue-500/10 to-transparent blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Anchored</span>
+                    <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/15 group-hover:border-blue-500/30 transition-all duration-300">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-extrabold text-white tracking-tight">{analytics?.total_documents || 0}</h3>
+                    <p className="text-slate-400 text-[11px] mt-1 font-sans">Verified secure records in ledger</p>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-4xl font-extrabold text-white">{analytics?.total_documents || 0}</h3>
-                  <p className="text-slate-400 text-xs mt-1">Verified secure records in ledger</p>
-                </div>
-              </div>
+              </motion.div>
 
               {/* Unique Categories Card */}
-              <div className="glass-panel p-6 rounded-2xl space-y-4 shadow-xl">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Document Categories</span>
-                  <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400">
-                    <FolderOpen className="h-5 w-5" />
+              <motion.div
+                variants={{
+                  hidden: { y: 15, opacity: 0 },
+                  show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 200, damping: 20 } }
+                }}
+              >
+                <div className="relative group overflow-hidden rounded-2xl border border-white/5 bg-slate-950/45 p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/10 hover:shadow-[0_12px_30px_rgba(5,255,155,0.05)] hover:-translate-y-1">
+                  <div className="absolute -right-4 -top-4 h-24 w-24 bg-gradient-to-br from-emerald-500/10 to-transparent blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Categories</span>
+                    <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/15 group-hover:border-emerald-500/30 transition-all duration-300">
+                      <FolderOpen className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-extrabold text-white tracking-tight">
+                      {analytics ? Object.keys(analytics.categories).length : 0}
+                    </h3>
+                    <p className="text-slate-400 text-[11px] mt-1 font-sans">Distinct document classes identified</p>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-4xl font-extrabold text-white">
-                    {analytics ? Object.keys(analytics.categories).length : 0}
-                  </h3>
-                  <p className="text-slate-400 text-xs mt-1">Distinct document classes identified</p>
-                </div>
-              </div>
+              </motion.div>
 
-              {/* Language Distribution Card */}
-              <div className="glass-panel p-6 rounded-2xl space-y-4 shadow-xl">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Languages Verified</span>
-                  <div className="p-2 bg-purple-500/10 rounded-xl text-purple-400">
-                    <Globe className="h-5 w-5" />
+              {/* Languages Verified Card */}
+              <motion.div
+                variants={{
+                  hidden: { y: 15, opacity: 0 },
+                  show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 200, damping: 20 } }
+                }}
+              >
+                <div className="relative group overflow-hidden rounded-2xl border border-white/5 bg-slate-950/45 p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/10 hover:shadow-[0_12px_30px_rgba(168,85,247,0.05)] hover:-translate-y-1">
+                  <div className="absolute -right-4 -top-4 h-24 w-24 bg-gradient-to-br from-purple-500/10 to-transparent blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Languages</span>
+                    <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/15 group-hover:border-purple-500/30 transition-all duration-300">
+                      <Globe className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-extrabold text-white tracking-tight">
+                      {analytics ? Object.keys(analytics.languages).length : 0}
+                    </h3>
+                    <p className="text-slate-400 text-[11px] mt-1 font-sans">Hindi, Telugu, Tamil & English</p>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-4xl font-extrabold text-white">
-                    {analytics ? Object.keys(analytics.languages).length : 0}
-                  </h3>
-                  <p className="text-slate-400 text-xs mt-1">Hindi, Telugu, Tamil & English</p>
-                </div>
-              </div>
+              </motion.div>
 
-              {/* Security Health status */}
-              <div className="glass-panel p-6 rounded-2xl space-y-4 shadow-xl">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">System Integrity</span>
-                  <div className="p-2 bg-teal-500/10 rounded-xl text-teal-400">
-                    <Calendar className="h-5 w-5" />
+              {/* System Integrity Card */}
+              <motion.div
+                variants={{
+                  hidden: { y: 15, opacity: 0 },
+                  show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 200, damping: 20 } }
+                }}
+              >
+                <div className="relative group overflow-hidden rounded-2xl border border-white/5 bg-slate-950/45 p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/10 hover:shadow-[0_12px_30px_rgba(20,184,166,0.05)] hover:-translate-y-1">
+                  <div className="absolute -right-4 -top-4 h-24 w-24 bg-gradient-to-br from-teal-500/10 to-transparent blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Integrity</span>
+                    <div className="p-2.5 bg-teal-500/10 rounded-xl text-teal-400 border border-teal-500/15 group-hover:border-teal-500/30 transition-all duration-300">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-extrabold text-teal-400 tracking-tight">100% SECURE</h3>
+                    <p className="text-slate-400 text-[11px] mt-1 font-sans">DID encryption validation online</p>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-extrabold text-teal-400">100% SECURE</h3>
-                  <p className="text-slate-400 text-xs mt-1">DID encryption validation online</p>
-                </div>
-              </div>
+              </motion.div>
 
-            </div>
-
-            {/* Language and category Visual bars (Clean Custom Grid) */}
+            </motion.div>            {/* Language and category Visual bars (Clean Custom Grid) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* Category Breakdown list */}
