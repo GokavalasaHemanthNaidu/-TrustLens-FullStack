@@ -136,7 +136,7 @@ export default function UploadPage() {
           setLoading(false);
           setForceAnchor(false);
           setForceAnchorActive(false);
-        }, 800);
+        }, 100);
       } else {
         if (data.security_blocked) {
           setSecurityBlocked(true);

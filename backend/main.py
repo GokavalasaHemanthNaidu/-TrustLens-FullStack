@@ -7,7 +7,7 @@ import base64
 import io
 import os
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
@@ -120,6 +120,17 @@ async def upload_document(
         # 4. Create SHA-256 Content Fingerprint
         content_hash = hashing.create_hash(flat)
         
+        # 4.5 Prevent Duplicate Anchoring
+        if not force_anchor:
+            existing_docs = db_client.get_user_documents(user_id)
+            if any(doc.get("content_hash") == content_hash for doc in existing_docs):
+                return {
+                    "success": False,
+                    "security_blocked": True,
+                    "error": "Duplicate Alert: This exact document is already anchored in your ledger.",
+                    "forgery": forgery
+                }
+        
         # 5. Generate ECDSA Signature and Keypair
         priv, pub = crypto_signer.generate_keypair()
         sig = crypto_signer.sign_hash(content_hash, priv)
@@ -158,6 +169,27 @@ async def upload_document(
         }
     except Exception as e:
         logger.error(f"Upload API failed: {e}")
+        return {"success": False, "error": str(e)}
+
+# ── Document Management ──
+
+class DeleteRequest(BaseModel):
+    user_id: str
+    doc_ids: List[str]
+
+@app.post("/api/documents/delete")
+def delete_documents(req: DeleteRequest):
+    try:
+        deleted_count = 0
+        for doc_id in req.doc_ids:
+            doc = db_client.get_document_by_id(doc_id)
+            if doc and doc.get("user_id") == req.user_id:
+                success = db_client.delete_document_record(doc_id, doc.get("image_url"))
+                if success:
+                    deleted_count += 1
+        return {"success": True, "deleted_count": deleted_count}
+    except Exception as e:
+        logger.error(f"Error in delete documents API: {e}")
         return {"success": False, "error": str(e)}
 
 # ── Public Verification ──

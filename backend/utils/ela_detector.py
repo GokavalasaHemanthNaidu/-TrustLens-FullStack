@@ -139,16 +139,16 @@ def assess_forgery_risk(mean_error: float, metadata: Dict[str, Any], filename: s
     details = []
     
     # 1. ELA Mean Error Assessment
-    # Unmodified pictures: usually 0.5 - 5.0
-    # Edited JPEGs: elevated to 10.0 - 45.0 because of inconsistent high-frequency edges
-    if mean_error > 25.0:
+    # Unmodified pictures: usually 0.5 - 2.5
+    # Edited JPEGs: elevated to 5.0 - 45.0 because of inconsistent high-frequency edges
+    if mean_error > 10.0:
         score += 45.0
         details.append(f"Critically high compression mismatch (ELA Index: {mean_error:.1f})")
-    elif mean_error > 12.0:
-        score += 25.0
+    elif mean_error > 5.0:
+        score += 35.0
         details.append(f"Elevated compression error level (ELA Index: {mean_error:.1f})")
-    elif mean_error > 6.0:
-        score += 10.0
+    elif mean_error > 3.0:
+        score += 15.0
         details.append(f"Mild compression variance (ELA Index: {mean_error:.1f})")
     else:
         details.append(f"Clean compression profile (ELA Index: {mean_error:.1f})")
@@ -158,7 +158,7 @@ def assess_forgery_risk(mean_error: float, metadata: Dict[str, Any], filename: s
         score += 40.0
         details.append(f"Explicit editing software signature found: {metadata['software']}")
     elif metadata["is_stripped"]:
-        score += 15.0
+        score += 45.0
         # If it's a screenshot or web-saved doc, EXIF is stripped
         details.append("Image is stripped of standard camera metadata (EXIF).")
     else:

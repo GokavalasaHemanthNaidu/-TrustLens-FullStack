@@ -298,13 +298,18 @@ export default function VerifyForensicPage() {
             ]
           };
         } else if (status === "tampered") {
+          const cryptoValid = comp?.crypto_audit?.signature_valid && comp?.crypto_audit?.hash_valid;
           return {
             status: "FAILED",
             color: "text-red-400",
             borderColor: "border-red-500/30",
             shadowColor: "shadow-red-500/10",
-            badge: "Signature mismatch",
-            points: [
+            badge: cryptoValid ? "Data Mismatch" : "Signature Mismatch",
+            points: cryptoValid ? [
+              "Cryptographic signature check passed, but the visual text fields have shifted or deviated.",
+              "The uploaded scan details do not match the exact text extracted during the genesis anchor.",
+              "Integrity violation detected in ledger verification."
+            ] : [
               "Cryptographic signature check failed! Stored signature does not match recalculated hash.",
               "Visual data tampering has invalidated the anchored SHA-256 genesis fingerprint.",
               "Integrity violation detected in ledger verification."

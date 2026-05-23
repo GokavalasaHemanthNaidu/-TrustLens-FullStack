@@ -138,7 +138,7 @@ _KEYWORD_RULES = [
 
     # 2. Government IDs (checked later — Aadhaar/PAN often printed ON marksheets)
     (["aadhaar", "unique identification", "uidai"],          "Aadhaar Card"),
-    (["permanent account number", "income tax department"],  "PAN Card"),
+    (["permanent account number", "income tax department", "govt of india", "govt. of india", "pan card"],  "PAN Card"),
     (["passport", "republic of india", "nationality"],       "Passport"),
     (["election commission", "voter", "epic"],               "Voter ID"),
     (["driving licence", "transport", "motor vehicle"],      "Driving License"),
@@ -259,10 +259,18 @@ def _extract_id(text: str, doc_type: str) -> Tuple[str, float]:
              r'|Invoice\s*No|Account\s*No)[^\w\n]{0,5}([A-Za-z0-9\-\/]+)', 78.0),
             (r'(?i)(?:No\.|Number|Roll|ID)[\s:\-]+([A-Za-z0-9\-]{4,20})', 65.0),
         ]
+        
     for pat, conf in patterns:
         m = re.search(pat, text)
         if m:
             return m.group(1).replace(" ", ""), conf
+            
+    # Universal fallback for PAN on space-stripped text
+    clean_no_spaces = text.replace(" ", "")
+    m = re.search(r'([A-Z]{5}[0-9]{4}[A-Z])', clean_no_spaces)
+    if m:
+        return m.group(1), 85.0
+        
     return "", 0.0
 
 def _extract_dates(text: str) -> Dict[str, Tuple[str, float]]:
@@ -361,11 +369,12 @@ def analyze_document(image: Image.Image, filename: str = "") -> Dict[str, Any]:
     result["language"] = detected_lang
     logger.info(f"Detected script language: {detected_lang}")
 
-    # ── Stage 3: Keyword fallback if ML didn't fire ────────────────────────
-    if not result["ml_used"] and raw_text.strip():
+    # ── Stage 3: Keyword fallback if ML didn't fire or returned Unknown ────
+    if (not result["ml_used"] or "unknown" in result["document_type"].lower() or result["document_type"] == "Document") and raw_text.strip():
         kw_type, kw_conf = _keyword_classify(raw_text)
-        result["document_type"] = kw_type
-        result["confidence"]    = kw_conf
+        if kw_type != "Document":
+            result["document_type"] = kw_type
+            result["confidence"]    = kw_conf
 
     # ── Stage 4: Donut VQA for name (if ML is available) ──────────────────
     name_val, name_conf = "", 0.0
@@ -379,15 +388,6 @@ def analyze_document(image: Image.Image, filename: str = "") -> Dict[str, Any]:
     date_dict           = _extract_dates(raw_text)
     amt_val,  amt_conf  = _extract_amount(raw_text)
     addr_val, addr_conf = _extract_address(raw_text)
-
-    # ── Stage 6: Fallbacks ─────────────────────────────────────────────────
-    if not name_val and filename:
-        if not re.search(r'(?i)(whatsapp|img_|screenshot|scan|untitled)', filename):
-            name_val  = filename.split(".")[0].replace("_", " ").title()
-            name_conf = 30.0
-    if not id_val:
-        id_val    = "TRU-" + str(int(time.time()))[-6:]
-        id_conf   = 0.0
 
     # ── Assemble output ────────────────────────────────────────────────────
     result["entities"] = {

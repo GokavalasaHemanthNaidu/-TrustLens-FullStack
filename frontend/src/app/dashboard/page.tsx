@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { 
   FileText, ShieldAlert, Plus, Globe, FolderOpen, 
-  Calendar, Eye, Download, Search, AlertCircle, FileSpreadsheet
+  Calendar, Eye, Download, Search, AlertCircle, FileSpreadsheet, Trash2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -36,6 +36,49 @@ export default function Dashboard() {
   // Verification modal or card result state
   const [verifyResult, setVerifyResult] = useState<any | null>(null);
   const [verifying, setVerifying] = useState(false);
+
+  // Deletion state
+  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const toggleDocSelection = (id: string) => {
+    const newSet = new Set(selectedDocs);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedDocs(newSet);
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedDocs.size === analytics?.documents.length) {
+      setSelectedDocs(new Set());
+    } else {
+      setSelectedDocs(new Set(analytics?.documents.map(d => d.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedDocs.size === 0 || !userId) return;
+    setIsDeleting(true);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/documents/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, doc_ids: Array.from(selectedDocs) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSelectedDocs(new Set());
+        fetchAnalytics(userId); // Refresh table
+      } else {
+        alert("Delete failed: " + data.error);
+      }
+    } catch (e) {
+      alert("Network error during delete.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const userJson = localStorage.getItem("trustlens_user");
@@ -434,17 +477,46 @@ export default function Dashboard() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-white/5 bg-slate-950/20 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-6 py-4 w-12">
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 rounded border-white/20 bg-slate-950/50 text-blue-500 focus:ring-blue-500/50 cursor-pointer"
+                          checked={analytics?.documents.length !== 0 && selectedDocs.size === analytics?.documents.length}
+                          onChange={toggleAllSelection}
+                        />
+                      </th>
                       <th className="px-6 py-4">Document Details</th>
                       <th className="px-6 py-4">Document ID</th>
                       <th className="px-6 py-4">Anchored Date</th>
                       <th className="px-6 py-4">Type</th>
-                      <th className="px-6 py-4 text-right">Ledger Actions</th>
+                      <th className="px-6 py-4 text-right">
+                        {selectedDocs.size > 0 ? (
+                          <button
+                            onClick={handleDeleteSelected}
+                            disabled={isDeleting}
+                            className="flex items-center gap-1.5 ml-auto px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold cursor-pointer transition-colors duration-200 disabled:opacity-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            {isDeleting ? "Deleting..." : "Delete Selected"}
+                          </button>
+                        ) : (
+                          "Ledger Actions"
+                        )}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5 text-sm text-slate-300">
                     {analytics && analytics.documents.length > 0 ? (
                       analytics.documents.map((doc) => (
                         <tr key={doc.id} className="hover:bg-white/[0.02] transition-colors duration-150">
+                          <td className="px-6 py-4">
+                            <input 
+                              type="checkbox" 
+                              className="w-4 h-4 rounded border-white/20 bg-slate-950/50 text-blue-500 focus:ring-blue-500/50 cursor-pointer"
+                              checked={selectedDocs.has(doc.id)}
+                              onChange={() => toggleDocSelection(doc.id)}
+                            />
+                          </td>
                           <td className="px-6 py-4 font-semibold text-white">
                             {doc.name || "Unnamed Document"}
                           </td>
@@ -479,7 +551,7 @@ export default function Dashboard() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center text-slate-500 italic">
+                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">
                           No documents anchored yet. Go to "Anchor Vault" to secure your first document!
                         </td>
                       </tr>
