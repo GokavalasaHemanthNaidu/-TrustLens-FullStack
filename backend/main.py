@@ -187,7 +187,7 @@ async def flag_ai_error(req: TrainingCorrectionRequest):
     """Log an AI mistake and user correction for continuous learning."""
     try:
         # Retrieve the document from db
-        doc = db_client.get_document(req.doc_id)
+        doc = db_client.get_document_by_id(req.doc_id)
         if not doc:
             raise HTTPException(status_code=404, detail="Document not found")
             
