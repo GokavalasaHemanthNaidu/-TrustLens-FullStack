@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Shield, LayoutDashboard, Upload, Search, LogOut, User, Brain, Menu, X } from "lucide-react";
+import { Shield, LayoutDashboard, Upload, Search, LogOut, User, Brain, Menu, X, Home } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -29,10 +29,12 @@ export default function Navbar() {
   };
 
   const navItems = [
+    { href: "/", label: "Home", icon: Home },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/upload", label: "Anchor Vault", icon: Upload },
     { href: "/verify", label: "Forensic Scan", icon: Search },
     { href: "/training", label: "AI Training", icon: Brain },
+    { href: "/profile", label: "Profile", icon: User },
   ];
 
   return (
@@ -78,10 +80,10 @@ export default function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-3">
           {email && (
-            <div className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+            <Link href="/profile" className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl px-3 py-1.5 text-xs text-slate-300 hover:bg-white/10 hover:text-white transition-all cursor-pointer">
               <User className="h-3.5 w-3.5 text-teal-400" />
               <span className="font-medium max-w-[120px] truncate">{email}</span>
-            </div>
+            </Link>
           )}
           <button
             onClick={handleLogout}
