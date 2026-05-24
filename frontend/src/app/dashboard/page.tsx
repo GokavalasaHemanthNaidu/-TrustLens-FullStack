@@ -229,7 +229,9 @@ export default function Dashboard() {
               </button>
             </Link>
           </div>
-        </motion.div        {/* Loading / Error States */}
+        </motion.div>
+
+        {/* Loading / Error States */}
         {loading ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
