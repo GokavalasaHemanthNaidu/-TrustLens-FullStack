@@ -462,6 +462,7 @@ def get_user_analytics(user_id: str = Query(...)):
             "documents": [
                 {
                     "id": d.get("id") or str(d.get("_id", "")),
+                    "image_url": d.get("image_url", ""),
                     "doc_type": (d.get("extracted_fields") or {}).get("doc_type", "Document"),
                     "name": (d.get("extracted_fields") or {}).get("name", ""),
                     "document_id": (d.get("extracted_fields") or {}).get("document_id", ""),
