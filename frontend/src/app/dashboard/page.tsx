@@ -37,6 +37,38 @@ export default function Dashboard() {
   const [verifyResult, setVerifyResult] = useState<any | null>(null);
   const [verifying, setVerifying] = useState(false);
 
+  // AI Training feedback state
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const [editedMetadata, setEditedMetadata] = useState<any>({});
+  const [submittingCorrection, setSubmittingCorrection] = useState(false);
+
+  const handleCorrectionSubmit = async () => {
+    if (!verifyResult?.id) return;
+    setSubmittingCorrection(true);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/training/correction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doc_id: verifyResult.id,
+          corrected_fields: editedMetadata
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Training data logged securely! Thank you for improving the AI.");
+        setIsEditingMetadata(false);
+      } else {
+        alert("Failed to log correction: " + data.error);
+      }
+    } catch (e) {
+      alert("Network error.");
+    } finally {
+      setSubmittingCorrection(false);
+    }
+  };
+
   // Deletion state
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -128,6 +160,8 @@ export default function Dashboard() {
       const data = await response.json();
       if (data.success) {
         setVerifyResult(data.document);
+        setEditedMetadata(data.document.extracted_fields || {});
+        setIsEditingMetadata(false);
       } else {
         setVerifyResult({ error: data.error || "No matching record in verified ledger." });
       }
@@ -259,12 +293,55 @@ export default function Dashboard() {
                       <code className="text-white bg-slate-950 px-2 py-0.5 rounded text-[10px] break-all block mt-0.5">{verifyResult.content_hash}</code>
                     </div>
                     <div>
-                      <span className="block text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Extracted Metadata</span>
+                      <div className="flex items-center justify-between">
+                        <span className="block text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Extracted Metadata</span>
+                        {!isEditingMetadata && (
+                          <button 
+                            onClick={() => setIsEditingMetadata(true)}
+                            className="text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                          >
+                            Flag AI Error
+                          </button>
+                        )}
+                      </div>
                       <div className="bg-slate-950 p-2 rounded mt-1 space-y-1">
-                        <p><strong>Name:</strong> {verifyResult.extracted_fields?.name || "N/A"}</p>
-                        <p><strong>Doc ID:</strong> {verifyResult.extracted_fields?.document_id || "N/A"}</p>
-                        <p><strong>Type:</strong> {verifyResult.extracted_fields?.doc_type || "N/A"}</p>
-                        <p><strong>Language:</strong> {verifyResult.extracted_fields?.language || "english"}</p>
+                        {isEditingMetadata ? (
+                          <div className="space-y-2">
+                            {['name', 'document_id', 'doc_type', 'language'].map(field => (
+                              <div key={field} className="flex flex-col">
+                                <label className="text-[9px] text-slate-500 capitalize">{field.replace('_', ' ')}</label>
+                                <input 
+                                  type="text" 
+                                  value={editedMetadata[field] || ""}
+                                  onChange={(e) => setEditedMetadata({...editedMetadata, [field]: e.target.value})}
+                                  className="bg-slate-900 border border-white/10 rounded px-2 py-1 text-xs text-white"
+                                />
+                              </div>
+                            ))}
+                            <div className="flex gap-2 pt-2">
+                              <button 
+                                onClick={handleCorrectionSubmit}
+                                disabled={submittingCorrection}
+                                className="flex-1 bg-teal-600 hover:bg-teal-500 text-white text-[10px] font-bold py-1 rounded cursor-pointer"
+                              >
+                                {submittingCorrection ? "Saving..." : "Submit Correction"}
+                              </button>
+                              <button 
+                                onClick={() => setIsEditingMetadata(false)}
+                                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-[10px] py-1 rounded cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p><strong>Name:</strong> {verifyResult.extracted_fields?.name || "N/A"}</p>
+                            <p><strong>Doc ID:</strong> {verifyResult.extracted_fields?.document_id || "N/A"}</p>
+                            <p><strong>Type:</strong> {verifyResult.extracted_fields?.doc_type || "N/A"}</p>
+                            <p><strong>Language:</strong> {verifyResult.extracted_fields?.language || "english"}</p>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div>

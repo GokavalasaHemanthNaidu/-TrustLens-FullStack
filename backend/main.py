@@ -178,6 +178,30 @@ class DeleteRequest(BaseModel):
     user_id: str
     doc_ids: List[str]
 
+class TrainingCorrectionRequest(BaseModel):
+    doc_id: str
+    corrected_fields: dict
+
+@app.post("/api/training/correction")
+async def flag_ai_error(req: TrainingCorrectionRequest):
+    """Log an AI mistake and user correction for continuous learning."""
+    try:
+        # Retrieve the document from db
+        doc = db_client.get_document(req.doc_id)
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+            
+        success = db_client.log_training_data(
+            doc_id=req.doc_id,
+            image_url=doc.get("image_url", ""),
+            original_fields=doc.get("extracted_fields", {}),
+            corrected_fields=req.corrected_fields
+        )
+        return {"success": success}
+    except Exception as e:
+        logger.error(f"Failed to log training correction: {e}")
+        return {"success": False, "error": str(e)}
+
 @app.post("/api/documents/delete")
 def delete_documents(req: DeleteRequest):
     try:

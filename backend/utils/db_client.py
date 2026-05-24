@@ -64,6 +64,10 @@ def _users() -> Optional[Collection]:
     db = _db()
     return db["users"] if db is not None else None
 
+def _training() -> Optional[Collection]:
+    db = _db()
+    return db["ai_training_data"] if db is not None else None
+
 # ── Cloudinary setup ───────────────────────────────────────────────────────────
 def _init_cloudinary():
     cloudinary.config(
@@ -80,6 +84,7 @@ LOCAL_DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 os.makedirs(LOCAL_DB_DIR, exist_ok=True)
 USERS_FILE = os.path.join(LOCAL_DB_DIR, "users.json")
 DOCS_FILE = os.path.join(LOCAL_DB_DIR, "documents.json")
+TRAINING_FILE = os.path.join(LOCAL_DB_DIR, "ai_training_data.json")
 
 def _load_local_users() -> dict:
     if not os.path.exists(USERS_FILE):
@@ -114,6 +119,23 @@ def _save_local_docs(docs: list):
             json.dump(docs, f, indent=2)
     except Exception as e:
         logger.error(f"Error saving local docs: {e}")
+
+def _load_local_training() -> list:
+    if not os.path.exists(TRAINING_FILE):
+        return []
+    try:
+        with open(TRAINING_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Error loading local training data: {e}")
+        return []
+
+def _save_local_training(data: list):
+    try:
+        with open(TRAINING_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        logger.error(f"Error saving local training data: {e}")
 
 # ── DOCUMENT: upload image ─────────────────────────────────────────────────────
 def upload_image_to_storage(user_id: str, file_bytes: bytes, file_name: str) -> Optional[str]:
@@ -239,6 +261,34 @@ def delete_document_record(doc_id: str, image_url: Optional[str] = None) -> bool
             pass
 
     return deleted
+
+# ── AI TRAINING: Log corrections ────────────────────────────────────────────────
+def log_training_data(doc_id: str, image_url: str, original_fields: dict, corrected_fields: dict) -> bool:
+    """Save an AI mistake and user correction to the training queue."""
+    import datetime
+    
+    record = {
+        "doc_id": doc_id,
+        "image_url": image_url,
+        "original_ai_prediction": original_fields,
+        "user_correction": corrected_fields,
+        "timestamp": datetime.datetime.utcnow().isoformat()
+    }
+    
+    # Try Mongo
+    col = _training()
+    if col is not None:
+        try:
+            col.insert_one(record.copy())
+            return True
+        except Exception as e:
+            logger.error(f"Error saving training data to Mongo: {e}")
+            
+    # Local fallback
+    train_data = _load_local_training()
+    train_data.append(record)
+    _save_local_training(train_data)
+    return True
 
 # ── SEARCH: unified search for verify page ─────────────────────────────────────
 def search_documents(
