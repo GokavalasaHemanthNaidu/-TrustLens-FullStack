@@ -392,9 +392,11 @@ export default function Dashboard() {
                               {!isEditingMetadata && (
                                 <button 
                                   onClick={() => setIsEditingMetadata(true)}
-                                  className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1 rounded-md cursor-pointer transition-colors font-semibold"
+                                  className="flex items-center gap-1.5 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1 rounded-md cursor-pointer transition-colors font-semibold"
+                                  title="Correct AI extraction mistakes"
                                 >
-                                  Flag AI Error
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                  Correct Metadata
                                 </button>
                               )}
                             </div>
