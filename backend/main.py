@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-main.py — FastAPI entry point & API endpoints for Veralyt Full-Stack.
+main.py — FastAPI entry point & API endpoints for PramanaChain Full-Stack.
 Serves as the backend for the Next.js React web application.
 """
 import base64
@@ -19,11 +19,11 @@ from models.document import DocumentModel
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("Veralyt_backend")
+logger = logging.getLogger("PramanaChain_backend")
 
 app = FastAPI(
-    title="Veralyt Secure Backend",
-    description="High-performance FastAPI endpoint for Veralyt Document Trust Chain & Forgery Detection.",
+    title="PramanaChain Secure Backend",
+    description="High-performance FastAPI endpoint for PramanaChain Document Trust Chain & Forgery Detection.",
     version="1.5.0"
 )
 
@@ -52,7 +52,7 @@ class VerifyResponse(BaseModel):
 def home():
     return {
         "status": "online",
-        "app": "Veralyt Backend",
+        "app": "PramanaChain Backend",
         "version": "1.5.0",
         "endpoints": ["/api/auth/signup", "/api/auth/login", "/api/upload", "/api/verify", "/api/verify/image", "/api/analytics"]
     }
